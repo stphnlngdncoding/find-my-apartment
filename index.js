@@ -11,9 +11,9 @@ populateCache();
 
 getListingPids();
 
-setInterval(getListingPids, 1000 * 60);
+setInterval(getListingPids, 1000 * 60 * 2); //last variable is minutes
 
-
+//craigslist sets most recent things to local storage.... how to get from that?
 
 function populateCache() {
 	let contents = fs.readFileSync('listings.txt').toString();
@@ -31,6 +31,13 @@ function getListingPids() {
 	let options = {
 		url: 'https://sfbay.craigslist.org/search/sfc/apa',
 		// headers: {
+		// 	'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+		// 	'Accept-Encoding': 'gzip, deflate, sdch, br',
+		// 	'Accept-Language': 'en-US,en;q=0.8',
+		// 	'Cache-Control': 'max-age=0',
+		// 	'Cookie': 'cl_def_hp=sfbay; cl_b=2vxOn2V05hGZV65lTFx2tgjs0xU; cl_tocmode=hhh%3Alist',
+		// 	// 'If-Modified-Since': 'Tue, 06 Sep 2016 22:56:50 GMT',
+		// 	'Upgrade-Insecure-Requests': '1',
 		// 	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36'
 		// }
 	}
