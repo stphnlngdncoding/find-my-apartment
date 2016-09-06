@@ -53,11 +53,20 @@ function parsePids (error, response, body) {
 	});
 	console.log(newListings);
 
-	if (newListings.length !== 0) {
-		newListings.forEach((pid) => {
-			getContentFromPid(pid);
-		})
-	}
+	//queue to slow down requests for the specific page
+	let intervalId = setInterval(function(){
+		if (newListings.length === 0) {
+			clearInterval(intervalId);
+		} else {
+			let firstItem = newListings.shift();
+			getContentFromPid(firstItem);
+		}
+	}, 2000)
+	// if (newListings.length !== 0) {
+	// 	newListings.forEach((pid) => {
+	// 		getContentFromPid(pid);
+	// 	})
+	// }
 }
 
 
@@ -75,7 +84,7 @@ function getContentFromPid(pid) {
 		// console.log(post);
 		let postString = post.price + " " + post.title + " " + post.url;
 		console.log(postString);
-		sendSms(postString);
+		// sendSms(postString);
 	})
 }
 
