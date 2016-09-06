@@ -75,7 +75,7 @@ function getContentFromPid(pid) {
 		// console.log(post);
 		let postString = post.price + " " + post.title + " " + post.url;
 		console.log(postString);
-		// sendSms(postString);
+		sendSms(postString);
 	})
 }
 
