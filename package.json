@@ -1,0 +1,17 @@
+{
+  "name": "find-my-apartment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^0.22.0",
+    "request": "^2.74.0",
+    "twilio": "^2.10.0"
+  }
+}
