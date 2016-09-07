@@ -7,16 +7,44 @@ const Browser = require('zombie');
 const client = require('twilio')(config.accountSid, config.authToken);
 
 const seenListings = {};
+let allListings;
+let freshListings;
+
+setInterval(function() {
+	getListingPids()
+	.then(function(allPids){
+		allListings = allPids;
+		populateCache();
+		freshListings = checkAgainstCache(allListings);
+		console.log("fresh listings", freshListings);
+			let intervalId = setInterval(function(){
+			if (freshListings.length === 0) {
+				clearInterval(intervalId);
+			} else {
+				let firstItem = freshListings.shift();
+				getContentFromPid(firstItem);
+			}
+		}, 2000)
+	})
+}, 1000 * 60 * 1); //last variable is minutes
 
 
-
-// populateCache();
-
-// getListingPids();
-
-// setInterval(getListingPids, 1000 * 60 * 2); //last variable is minutes
+// let freshListings = checkAgainstCache(listingPids);
+// console.log(freshListings);
 
 //craigslist sets most recent things to local storage.... how to get from that?
+
+function checkAgainstCache(pids) {
+	let newListings = [];
+	pids.forEach((pid) => {
+		if (seenListings[pid] === undefined) {
+			newListings.push(pid);
+			seenListings[pid] = true;
+			fs.appendFileSync('listings.txt', pid + ",");
+		}
+	})
+	return newListings;
+}
 
 function populateCache() {
 	let contents = fs.readFileSync('listings.txt').toString();
@@ -30,22 +58,24 @@ function populateCache() {
 }
 
 function getListingPids() {
-	Browser.visit('https://sfbay.craigslist.org/search/sfc/apa', (e, browser) => {
-		if (e) console.log("error with browser.visit",e);
-		// console.log(browser._windowInScope._response.body);
-		//srch_sfbay.craigslist.org/search/sfc/apa
-		// console.log(browser.localStorage('https://sfbay.craigslist.org/search/sfc/apa').getItem('srch_sfbay.craigslist.org/search/sfc/apa'))
-		let pTags = Array.from(browser.querySelectorAll('p[data-pid]'));
-		// console.log(pTags[0]._attributes[1])
-		// console.log(pTags[0]._attributes['data-pid']._nodeValue)
-		let pids = pTags.map((tag) => {
-			return tag._attributes['data-pid']._nodeValue;
+	let prom = new Promise(function(resolve, reject) {
+		Browser.visit('https://sfbay.craigslist.org/search/sfc/apa', (e, browser) => {
+			if (e) console.log("error with browser.visit",e);
+			// console.log(browser._windowInScope._response.body);
+			//srch_sfbay.craigslist.org/search/sfc/apa
+			// console.log(browser.localStorage('https://sfbay.craigslist.org/search/sfc/apa').getItem('srch_sfbay.craigslist.org/search/sfc/apa'))
+			let pTags = Array.from(browser.querySelectorAll('p[data-pid]'));
+			// console.log(pTags[0]._attributes[1])
+			// console.log(pTags[0]._attributes['data-pid']._nodeValue)
+			let pids = pTags.map((tag) => {
+				return tag._attributes['data-pid']._nodeValue;
+			})
+
+			resolve(pids);
 		})
-
-		console.log(pids);
 	})
+	return prom
 }
-
 
 
 function parsePids (error, response, body) {
@@ -62,9 +92,7 @@ function parsePids (error, response, body) {
 
 		}
 	});
-	console.log(newListings);
 
-	//queue to slow down requests for the specific page
 	let intervalId = setInterval(function(){
 		if (newListings.length === 0) {
 			clearInterval(intervalId);
@@ -73,11 +101,6 @@ function parsePids (error, response, body) {
 			getContentFromPid(firstItem);
 		}
 	}, 2000)
-	// if (newListings.length !== 0) {
-	// 	newListings.forEach((pid) => {
-	// 		getContentFromPid(pid);
-	// 	})
-	// }
 }
 
 
@@ -95,7 +118,7 @@ function getContentFromPid(pid) {
 		// console.log(post);
 		let postString = post.price + " " + post.title + " " + post.url;
 		console.log(postString);
-		// sendSms(postString);
+		sendSms(postString);
 	})
 }
 
