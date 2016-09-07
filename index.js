@@ -5,6 +5,7 @@ let cheerio = require('cheerio');
 const config = require('./config');
 const Browser = require('zombie');
 const client = require('twilio')(config.accountSid, config.authToken);
+const Pid = require('./pid.js')
 
 var scrapeController = {};
 
@@ -13,7 +14,11 @@ let allListings;
 let freshListings;
 
 
+
 scrapeController.executeScrapeAndText = function(bool, interval) {
+	//clear db:
+	// Pid.find({}).remove().exec();
+	
 	if (bool) {
 		console.log("initial scrape");
 		getListingPids()
@@ -22,9 +27,9 @@ scrapeController.executeScrapeAndText = function(bool, interval) {
 				populateCache();
 				freshListings = checkAgainstCache(allListings);
 				console.log("fresh listings", freshListings);
-				let intervalId = setInterval(function(){
+				let secondInterval = setInterval(function(){
 					if (freshListings.length === 0) {
-						clearInterval(intervalId);
+						clearInterval(secondInterval);
 					} else {
 						let firstItem = freshListings.shift();
 						getContentFromPid(firstItem);
@@ -39,9 +44,9 @@ scrapeController.executeScrapeAndText = function(bool, interval) {
 				populateCache();
 				freshListings = checkAgainstCache(allListings);
 				console.log("fresh listings", freshListings);
-				let intervalId = setInterval(function(){
+				let secondInterval = setInterval(function(){
 					if (freshListings.length === 0) {
-						clearInterval(intervalId);
+						clearInterval(secondInterval);
 					} else {
 						let firstItem = freshListings.shift();
 						getContentFromPid(firstItem);
@@ -57,31 +62,39 @@ scrapeController.executeScrapeAndText = function(bool, interval) {
 
 }
 
-// let freshListings = checkAgainstCache(listingPids);
-// console.log(freshListings);
-
-//craigslist sets most recent things to local storage.... how to get from that?
-
 function checkAgainstCache(pids) {
 	let newListings = [];
 	pids.forEach((pid) => {
 		if (seenListings[pid] === undefined) {
 			newListings.push(pid);
 			seenListings[pid] = true;
-			fs.appendFileSync('listings.txt', pid + ",");
+			// fs.appendFileSync('listings.txt', pid + ",");
+			Pid.create({id: pid});
 		}
 	})
 	return newListings;
 }
 
 function populateCache() {
-	let contents = fs.readFileSync('listings.txt').toString();
-	contents
-		.split(",")
-		.filter(x => x !== "")
+	// let contents = fs.readFileSync('listings.txt').toString();
+	// contents
+	// 	.split(",")
+	// 	.filter(x => x !== "")
+	// 	.forEach((pid) => {
+	// pid = pid.trim();
+	// Pid.create({id: pid}, (err, resp) => {
+	// 	console.log(err)
+	// 	console.log("saved");
+	// });
+	// })
+	console.log("populating cache...")
+	Pid.find({}, (err, foundPids) => {
+	foundPids
+		.map((pidObj) => {
+				return pidObj.id})
 		.forEach((pid) => {
-	pid = pid.trim();
-	seenListings[pid] = true;
+			seenListings[pid] = true;
+		})
 	})
 }
 

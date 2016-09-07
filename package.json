@@ -11,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "cheerio": "^0.22.0",
+    "mongodb": "^2.2.9",
+    "mongoose": "^4.6.0",
     "request": "^2.74.0",
     "twilio": "^2.10.0",
     "zombie": "^4.2.1"

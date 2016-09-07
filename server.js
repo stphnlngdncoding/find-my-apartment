@@ -2,8 +2,20 @@
 const express = require('express');
 const app = express();
 const scrapeController = require('./index');
+const mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/pid-cache');
+const Pid = require('./pid');
 
 let scrapeInterval;
+
+
+// Pid.create({id: "12345asdf56"});
+
+// Pid.find({}, (err, foundPids) => {
+// 	console.log(foundPids);
+// })
+
+
 
 app.get('/go', (req, res) => {
 	scrapeInterval = scrapeController.executeScrapeAndText(true);
