@@ -3,15 +3,18 @@ const fs = require('fs');
 const request = require('request');
 let cheerio = require('cheerio');
 const config = require('./config');
+const Browser = require('zombie');
 const client = require('twilio')(config.accountSid, config.authToken);
 
 const seenListings = {};
 
-populateCache();
 
-getListingPids();
 
-setInterval(getListingPids, 1000 * 60 * 2); //last variable is minutes
+// populateCache();
+
+// getListingPids();
+
+// setInterval(getListingPids, 1000 * 60 * 2); //last variable is minutes
 
 //craigslist sets most recent things to local storage.... how to get from that?
 
@@ -27,22 +30,23 @@ function populateCache() {
 }
 
 function getListingPids() {
+	Browser.visit('https://sfbay.craigslist.org/search/sfc/apa', (e, browser) => {
+		if (e) console.log("error with browser.visit",e);
+		// console.log(browser._windowInScope._response.body);
+		//srch_sfbay.craigslist.org/search/sfc/apa
+		// console.log(browser.localStorage('https://sfbay.craigslist.org/search/sfc/apa').getItem('srch_sfbay.craigslist.org/search/sfc/apa'))
+		let pTags = Array.from(browser.querySelectorAll('p[data-pid]'));
+		// console.log(pTags[0]._attributes[1])
+		// console.log(pTags[0]._attributes['data-pid']._nodeValue)
+		let pids = pTags.map((tag) => {
+			return tag._attributes['data-pid']._nodeValue;
+		})
 
-	let options = {
-		url: 'https://sfbay.craigslist.org/search/sfc/apa',
-		// headers: {
-		// 	'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-		// 	'Accept-Encoding': 'gzip, deflate, sdch, br',
-		// 	'Accept-Language': 'en-US,en;q=0.8',
-		// 	'Cache-Control': 'max-age=0',
-		// 	'Cookie': 'cl_def_hp=sfbay; cl_b=2vxOn2V05hGZV65lTFx2tgjs0xU; cl_tocmode=hhh%3Alist',
-		// 	// 'If-Modified-Since': 'Tue, 06 Sep 2016 22:56:50 GMT',
-		// 	'Upgrade-Insecure-Requests': '1',
-		// 	'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36'
-		// }
-	}
-	request(options, parsePids);
+		console.log(pids);
+	})
 }
+
+
 
 function parsePids (error, response, body) {
 	console.log("error", error);
