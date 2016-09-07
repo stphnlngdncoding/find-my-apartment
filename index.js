@@ -60,7 +60,7 @@ function populateCache() {
 function getListingPids() {
 	let prom = new Promise(function(resolve, reject) {
 		Browser.visit('https://sfbay.craigslist.org/search/sfc/apa', (e, browser) => {
-			if (e) console.log("error with browser.visit",e);
+			// if (e) console.log("error with browser.visit",e);
 			// console.log(browser._windowInScope._response.body);
 			//srch_sfbay.craigslist.org/search/sfc/apa
 			// console.log(browser.localStorage('https://sfbay.craigslist.org/search/sfc/apa').getItem('srch_sfbay.craigslist.org/search/sfc/apa'))
@@ -118,6 +118,7 @@ function getContentFromPid(pid) {
 		// console.log(post);
 		let postString = post.price + " " + post.title + " " + post.url;
 		console.log(postString);
+		
 		sendSms(postString);
 	})
 }
